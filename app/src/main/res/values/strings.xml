@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NTWall</string>
+    <string name="vpn_fgs_description">Provides per-app network firewall filtering using Android VpnService API. Blocks or allows internet access per app based on rules configured by the user.</string>
+
+    <!-- VPN Status -->
+    <string name="vpn_status_connected">Güvenlik Duvarı Aktif</string>
+    <string name="vpn_status_disconnected">Güvenlik Duvarı Kapalı</string>
+    <string name="vpn_status_connecting">Bağlanıyor…</string>
+    <string name="vpn_status_error">Bağlantı Hatası</string>
+    <string name="vpn_connecting">VPN bağlantısı kuruluyor…</string>
+    <string name="vpn_start">Güvenlik Duvarını Başlat</string>
+    <string name="vpn_stop">Güvenlik Duvarını Durdur</string>
+    <string name="vpn_permission_required">VPN izni gerekiyor</string>
+    <string name="vpn_permission_denied">VPN izni verilmedi. Güvenlik duvarı çalışmaz.</string>
+
+    <!-- App List -->
+    <string name="app_list_title">Uygulamalar</string>
+    <string name="search_hint">Uygulama ara…</string>
+    <string name="system_app">Sistem</string>
+    <string name="user_app">Kullanıcı</string>
+    <string name="filter_all">Tümü</string>
+    <string name="filter_allowed">İzinli</string>
+    <string name="filter_blocked">Engelli</string>
+    <string name="apps_empty_title">Liste boş</string>
+    <string name="apps_empty_body">Uygulamalar internete veri gönderdiğinde veya siz engellediğinizde burada görünür. Henüz hiç veri göndermeyen uygulamalar listelenmez.</string>
+
+    <!-- Rules -->
+    <string name="wifi">Wi-Fi</string>
+    <string name="mobile">Mobil Veri</string>
+    <string name="allowed">İzinli</string>
+    <string name="blocked">Engelli</string>
+    <string name="rule_saved">Kural kaydedildi</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_vpn">VPN Durumu</string>
+    <string name="notification_vpn_active">Güvenlik duvarı aktif — %1$d uygulama engelleniyor</string>
+
+    <!-- Network -->
+    <string name="network_wifi">Wi-Fi</string>
+    <string name="network_mobile">Mobil Veri</string>
+    <string name="network_other">Diğer</string>
+    <string name="network_none">Bağlantı Yok</string>
+
+    <!-- General -->
+    <string name="settings">Ayarlar</string>
+    <string name="about">Hakkında</string>
+    <string name="licenses">Açık Kaynak Lisansları</string>
+    <string name="version">Sürüm</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Ana Sayfa</string>
+    <string name="nav_traffic">Trafik</string>
+    <string name="nav_apps">Uygulamalar</string>
+    <string name="app_wordmark">NTWALL</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_analiz">ANALİZ</string>
+    <string name="dashboard_analiz_hint">Cihazın giden ağ trafiğini canlı olarak incele</string>
+    <string name="stat_forwarded">İletilen Trafik</string>
+    <string name="stat_blocked">Engellenen</string>
+    <string name="stat_active">Canlı Bağlantı</string>
+    <string name="dashboard_requires_vpn">Analiz için güvenlik duvarı açık olmalı</string>
+
+    <!-- Traffic -->
+    <string name="traffic_title">Canlı Trafik</string>
+    <string name="search_traffic_hint">Uygulama, IP, alan adı, port ara…</string>
+    <string name="tab_live">Canlı</string>
+    <string name="tab_history">Geçmiş</string>
+    <string name="chip_all">Tümü</string>
+    <string name="chip_active">Aktif</string>
+    <string name="chip_blocked">Engelli</string>
+    <string name="chip_tcp">TCP</string>
+    <string name="chip_udp">UDP</string>
+    <string name="connection_count">%1$d bağlantı · %2$d aktif</string>
+    <string name="firewall_off_notice">Güvenlik duvarı kapalı. Trafik analizi durdu.</string>
+    <string name="firewall_banner_start">BAŞLAT</string>
+    <string name="list_empty_title">Bağlantı yok</string>
+    <string name="list_empty_body">Güvenlik duvarı açıkken cihazdan yapılan gerçek bağlantılar burada görünür. İnternet trafiği oluşur oluşmaz liste dolar.</string>
+    <string name="no_results">Arama kriterlerine uyan bağlantı yok</string>
+    <string name="privacy_note">Yalnızca tünelden geçen gerçek trafik kaydedilir ve analiz edilir. Engellenen paketler ağa çıkmaz. Sahte veri üretilmez.</string>
+
+    <!-- Connection detail -->
+    <string name="conn_detail_title">Bağlantı Detayı</string>
+    <string name="detail_app">Uygulama</string>
+    <string name="detail_protocol">Protokol</string>
+    <string name="detail_direction">Yön</string>
+    <string name="detail_state">Durum</string>
+    <string name="detail_dest_ip">Hedef IP</string>
+    <string name="detail_hostname">Alan Adı</string>
+    <string name="detail_dest_port">Hedef Port</string>
+    <string name="detail_source_ip">Kaynak IP</string>
+    <string name="detail_source_port">Kaynak Port</string>
+    <string name="detail_bytes_sent">Gönderilen Veri</string>
+    <string name="detail_bytes_received">Alınan Veri</string>
+    <string name="detail_first_seen">Başlangıç</string>
+    <string name="detail_last_seen">Son Etkinlik</string>
+    <string name="detail_uid">UID</string>
+    <string name="detail_blocked">Engelli</string>
+    <string name="detail_blocked_hint">Bu bağlantı güvenlik duvarı tarafından durduruldu.</string>
+    <string name="hostname_unresolved">çözülemedi</string>
+    <string name="unknown_app">Bilinmeyen Uygulama</string>
+    <string name="conn_not_found">Bağlantı bulunamadı</string>
+    <string name="direction_out">Giden</string>
+    <string name="direction_in">Gelen</string>
+
+    <!-- App rules editor -->
+    <string name="app_rules_title">Kural Düzenle</string>
+    <string name="app_list_edit_hint">Port ve IP engelleme kurallarını düzenle</string>
+    <string name="rule_access_title">Uygulama Erişimi</string>
+    <string name="rule_access_hint_allow">İzinli: uygulama internete tam erişir</string>
+    <string name="rule_access_hint_block">Engelli: uygulamanın tüm internet erişimi kesilir</string>
+    <string name="rule_ports_title">Port Engelleme</string>
+    <string name="rule_ports_hint">Virgülle ayrılmış portlar engellenir, ör. 80, 443, 8080</string>
+    <string name="rule_ports_placeholder">80, 443, 8080</string>
+    <string name="rule_ips_title">IP Engelleme</string>
+    <string name="rule_ips_hint">Virgülle ayrılmış IP, CIDR veya önek, ör. 93.184.216.34, 10.0.0.0/8, 192.168.</string>
+    <string name="rule_ips_placeholder">93.184.216.34, 10.0.0.0/8</string>
+    <string name="rule_invalid_tokens">Geçersiz: %1$s</string>
+    <string name="rule_save">KAYDET</string>
+    <string name="rule_live_notice">Değişiklikler güvenlik duvarı açıkken ilk paketten itibaren uygulanır.</string>
+</resources>

@@ -1,0 +1,22 @@
+NTWall is a firewall that gives you control over which installed apps may use the network. It works through Android's built-in VPN service, entirely on your device. No root is required.
+
+<b>Features</b>
+• Block apps from the internet with one tap; every app stays allowed until you block it
+• Per-app rules for ports and IPv4 addresses / CIDR ranges (for example block only port 80, or 10.0.0.0/8)
+• Live view of every app's connections: app, host, port, bytes
+• Byte counters for forwarded and blocked traffic
+• Optional restart after reboot
+• Turkish interface
+
+<b>How it works</b>
+The traffic of all apps passes through the local VPN tunnel. Blocked traffic is dropped inside the tunnel and never leaves the device. Allowed traffic is relayed to the network by NTWall itself.
+
+<b>Privacy</b>
+• No ads, no analytics, no tracking, no accounts
+• Your rules and statistics stay on your device
+• The app has no server component and sends nothing anywhere
+
+<b>Good to know</b>
+• Android allows only one active VPN at a time, so NTWall cannot run together with another VPN app
+• Only IPv4 TCP and UDP traffic is relayed; IPv6 and ICMP are dropped, so apps fall back to IPv4
+• QUERY_ALL_PACKAGES is needed to list every installed app so you can manage its rules

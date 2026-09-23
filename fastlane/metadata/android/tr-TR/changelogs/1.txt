@@ -1,0 +1,5 @@
+İlk sürüm.
+• Yerel VPN ile uygulama bazlı internet engelleme
+• Uygulama başına port ve IP/CIDR kuralları
+• Engellenen ve kısıtlanan bağlantıların canlı görünümü
+• Trafik ve engellenen bayt sayaçları

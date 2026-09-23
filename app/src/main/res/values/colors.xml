@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="seed">#3ECF8E</color>
+    <color name="surface">#161618</color>
+    <color name="on_surface">#EAEDF0</color>
+    <color name="primary">#3ECF8E</color>
+    <color name="on_primary">#00190E</color>
+    <color name="error">#E5534B</color>
+    <color name="allowed">#3ECF8E</color>
+    <color name="blocked">#E5534B</color>
+</resources>

@@ -1,0 +1,1 @@
+Yerel VPN ile uygulama bazlı güvenlik duvarı, root gerekmez

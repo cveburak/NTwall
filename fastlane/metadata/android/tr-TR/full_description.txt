@@ -1,0 +1,22 @@
+NTWall, yüklü uygulamalardan hangilerinin ağa erişebileceğini sizin belirlemenizi sağlayan bir güvenlik duvarıdır. Android'in yerleşik VPN servisiyle tamamen cihazınızda çalışır. Root gerekmez.
+
+<b>Özellikler</b>
+• Uygulamaları tek dokunuşla internetten engelleyin; siz engellemedikçe her uygulama izinli kalır
+• Uygulama başına port ve IPv4 adresi / CIDR aralığı kuralları (ör. yalnızca 80 numaralı portu veya 10.0.0.0/8 aralığını engelleme)
+• Tüm uygulamaların bağlantılarını canlı izleme: uygulama, sunucu, port, bayt
+• İletilen ve engellenen trafik için bayt sayaçları
+• Yeniden başlatma sonrası otomatik açılma seçeneği
+• Türkçe arayüz
+
+<b>Nasıl çalışır?</b>
+Tüm uygulamaların trafiği yerel VPN tünelinden geçer. Engellenen trafik tünel içinde düşürülür ve cihazdan çıkmaz. İzinli trafiği NTWall kendisi ağa iletir.
+
+<b>Gizlilik</b>
+• Reklam, analiz, izleme veya hesap yoktur
+• Kurallarınız ve istatistikleriniz cihazınızda kalır
+• Sunucu bileşeni yoktur, hiçbir yere veri göndermez
+
+<b>Bilmekte fayda var</b>
+• Android aynı anda yalnızca bir VPN'e izin verir; NTWall başka bir VPN uygulamasıyla birlikte çalışamaz
+• Yalnızca IPv4 TCP ve UDP trafiği iletilir; IPv6 ve ICMP düşürülür, uygulamalar IPv4'e geçer
+• QUERY_ALL_PACKAGES izni, kurallarını yönetebilmeniz için yüklü tüm uygulamaları listelemek amacıyla gerekir

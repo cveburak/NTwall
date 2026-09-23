@@ -1,0 +1,1 @@
+Per-app firewall using a local VPN, no root needed

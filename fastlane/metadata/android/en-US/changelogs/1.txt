@@ -1,0 +1,5 @@
+First release.
+• Per-app internet blocking through a local VPN
+• Port and IP/CIDR rules per app
+• Live view of blocked and restricted connections
+• Traffic and blocked-byte counters
