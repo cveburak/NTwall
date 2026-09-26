@@ -133,8 +133,6 @@ fun TrafficScreen(
     }
 }
 
-/* ── Grouped view: one row per app ───────────────────────────────── */
-
 @Composable
 private fun Grouped(
     connections: List<ConnectionInfo>,
@@ -329,8 +327,6 @@ private fun AppGroupRow(
     }
 }
 
-/* ── Drill-down: individual connections for one app ──────────────── */
-
 @Composable
 private fun DrillDown(
     connections: List<ConnectionInfo>,
@@ -442,8 +438,6 @@ private fun DrillDown(
         }
     }
 }
-
-/* ── Single connection row (used in drill-down) ─────────────────── */
 
 @Composable
 fun ConnectionRow(
