@@ -106,7 +106,6 @@ fun AppRulesScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // App header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -136,7 +135,6 @@ fun AppRulesScreen(
                 }
             }
 
-            // Access control
             RuleCard(title = stringResource(R.string.rule_access_title)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -159,7 +157,6 @@ fun AppRulesScreen(
                 }
             }
 
-            // Port blocking
             RuleCard(title = stringResource(R.string.rule_ports_title)) {
                 OutlinedTextField(
                     value = portsText,
@@ -188,7 +185,6 @@ fun AppRulesScreen(
                 }
             }
 
-            // IP blocking
             RuleCard(title = stringResource(R.string.rule_ips_title)) {
                 OutlinedTextField(
                     value = ipsText,
