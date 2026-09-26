@@ -79,7 +79,6 @@ fun DashboardScreen(
     ) {
         Spacer(Modifier.size(8.dp))
 
-        // Wordmark + status
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -98,7 +97,6 @@ fun DashboardScreen(
             StatusChip(vpnState)
         }
 
-        // Status card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -137,7 +135,6 @@ fun DashboardScreen(
             )
         }
 
-        // ANALİZ button
         Button(
             onClick = onNavigateToTraffic,
             modifier = Modifier
@@ -166,7 +163,6 @@ fun DashboardScreen(
             modifier = Modifier.padding(start = 4.dp)
         )
 
-        // Flow stats
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatCell(
                 label = stringResource(R.string.stat_forwarded),
@@ -185,7 +181,6 @@ fun DashboardScreen(
             )
         }
 
-        // Top blocked apps
         val topBlocked = remember(perApp) {
             perApp.values
                 .filter { it.uid > 0 && it.bytesBlocked > 0 }
@@ -227,7 +222,6 @@ fun DashboardScreen(
             }
         }
 
-        // Firewall control
         val controlEnabled = vpnState !is VpnState.Starting &&
             vpnState !is VpnState.Preparing &&
             vpnState !is VpnState.Reconfiguring
