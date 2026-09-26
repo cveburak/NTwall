@@ -16,7 +16,6 @@ import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// A single packet observed on the tunnel, normalised by WallService.
 data class PacketObservation(
     val protocol: Int,
     val sourceIp: String,
@@ -103,8 +102,6 @@ class ConnectionTracker @Inject constructor(
         val proto = Protocol.from(observation.protocol) ?: return
         if (observation.sourcePort <= 0 || observation.destPort <= 0) return
 
-        // Canonical mapping: keep the app-local endpoint first so outbound and
-        // inbound halves of the same connection match the same key.
         val local = if (observation.outbound) {
             observation.sourceIp to observation.sourcePort
         } else {
