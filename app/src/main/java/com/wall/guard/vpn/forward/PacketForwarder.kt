@@ -24,15 +24,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-/** Writes a finished IP packet back to the TUN interface (towards the app). */
 fun interface TunWriter {
     fun write(packet: ByteArray, length: Int)
 }
 
-/**
- * Excludes a socket from the VPN so that relayed traffic does not loop back
- * into the tunnel. On Android this is `VpnService.protect()`.
- */
 interface SocketProtector {
     fun protect(socket: Socket): Boolean
     fun protect(socket: DatagramSocket): Boolean
@@ -48,27 +43,21 @@ data class FlowInfo(
 
 data class FlowDecision(val allow: Boolean, val uid: Int)
 
-/** Asked exactly once per new flow (TCP SYN / first UDP datagram). */
 fun interface FlowGate {
     fun decide(flow: FlowInfo): FlowDecision
 }
 
-/** Called for every packet the relay writes back to the app. */
 fun interface InboundListener {
     fun onInbound(flow: FlowInfo, uid: Int, bytes: Int, tcpFlags: Int)
 }
 
 enum class Verdict {
-    /** Packet was relayed to the real network. */
     FORWARDED,
 
-    /** The gate refused the flow; the packet was dropped. */
     DENIED,
 
-    /** Consumed without relaying and without accounting (stray segments, multicast...). */
     IGNORED,
 
-    /** Not something the relay can handle (IPv6, ICMP, fragments...). Caller decides. */
     UNSUPPORTED
 }
 
@@ -80,11 +69,9 @@ data class ForwarderLimits(
     val maxTcpSessions: Int = 512,
     val maxUdpSessions: Int = 1024,
     val connectTimeoutMs: Int = 10_000,
-    // Longer than push-service heartbeats (~28 min) so idle-but-healthy connections survive.
     val tcpIdleMs: Long = 35 * 60_000L,
     val udpIdleMs: Long = 60_000L,
     val dnsIdleMs: Long = 10_000L,
-    /** Max buffered client->server chunks per TCP session before we stop ACKing. */
     val queueChunks: Int = 256
 )
 
@@ -96,15 +83,6 @@ private data class FlowKey(
     val dstPort: Int
 )
 
-/**
- * A small user-space relay: the app's IPv4 TCP/UDP packets arrive from the
- * TUN device, are forwarded through ordinary (protected) sockets and the
- * replies are wrapped into IP packets and written back to the TUN device.
- *
- * Every app's traffic passes through here, so it has to stay robust: sessions
- * are capped, idle sessions are reaped and every failure resets just that
- * one connection.
- */
 class PacketForwarder(
     private val tun: TunWriter,
     private val protector: SocketProtector,
@@ -137,10 +115,6 @@ class PacketForwarder(
         janitor.scheduleWithFixedDelay({ cleanup() }, 5, 5, TimeUnit.SECONDS)
     }
 
-    // ------------------------------------------------------------------
-    // Entry point
-    // ------------------------------------------------------------------
-
     fun forward(packet: ByteArray, length: Int, gate: FlowGate): ForwardResult {
         if (closed || length < 20) return UNSUPPORTED
         val version = (packet[0].toInt() and 0xF0) shr 4
@@ -150,7 +124,6 @@ class PacketForwarder(
         val totalLen = u16(packet, 2)
         if (totalLen < ihl) return UNSUPPORTED
         val len = minOf(totalLen, length)
-        // Fragmented datagrams (MF flag or offset != 0) are not reassembled.
         if ((u16(packet, 6) and 0x3FFF) != 0) return UNSUPPORTED
 
         val proto = packet[9].toInt() and 0xFF
@@ -162,10 +135,6 @@ class PacketForwarder(
             else -> UNSUPPORTED
         }
     }
-
-    // ------------------------------------------------------------------
-    // TCP
-    // ------------------------------------------------------------------
 
     private fun forwardTcp(
         p: ByteArray, len: Int, ihl: Int, srcIp: Int, dstIp: Int, gate: FlowGate
@@ -214,9 +183,6 @@ class PacketForwarder(
             return ForwardResult(Verdict.FORWARDED, decision.uid)
         }
 
-        // A segment for a connection we do not know (e.g. created before the
-        // tunnel was rebuilt). Reset it so the app reconnects and goes through
-        // the gate again.
         if (!isRst) sendRstForUnknown(srcIp, srcPort, dstIp, dstPort, seq, ack, flags, payloadLen)
         return ForwardResult(Verdict.IGNORED, -1)
     }
@@ -269,12 +235,9 @@ class PacketForwarder(
         private var socket: Socket? = null
         private val outQueue = LinkedBlockingQueue<ByteArray>(limits.queueChunks)
 
-        // True once we advertised a shrunken window; the writer sends a window
-        // update as soon as enough queue space is free again.
         @Volatile
         private var windowClosed = false
 
-        /** Receive window advertised to the app: the free room in our send queue. */
         private fun advWindow(): Int = minOf(ADV_WINDOW, outQueue.remainingCapacity() * mss)
 
         fun start() {
@@ -284,8 +247,6 @@ class PacketForwarder(
                 lock.withLock { closeInternal(true) }
             }
         }
-
-        // ---- server side: connect, then relay server -> client ----------
 
         private fun runConnection() {
             val s = Socket()
@@ -354,8 +315,6 @@ class PacketForwarder(
             }
         }
 
-        // ---- client -> server: drain queue into the socket ---------------
-
         private fun writerLoop(s: Socket) {
             try {
                 val out = s.getOutputStream()
@@ -377,7 +336,7 @@ class PacketForwarder(
                                 outQueue.remainingCapacity() * mss >= ADV_WINDOW / 2
                             ) {
                                 windowClosed = false
-                                sendAck() // window update
+                                sendAck()
                             }
                         }
                     }
@@ -386,8 +345,6 @@ class PacketForwarder(
                 lock.withLock { closeInternal(true) }
             }
         }
-
-        // ---- packets coming from the app -----------------------------------
 
         fun onSegment(seq: Long, ack: Long, flags: Int, window: Int, buf: ByteArray, off: Int, len: Int) {
             lock.withLock {
@@ -399,7 +356,6 @@ class PacketForwarder(
                     return
                 }
                 if (flags and SYN != 0) {
-                    // Retransmitted SYN: repeat our SYN-ACK once connected.
                     if (established && seq == clientIsn) {
                         send(SYN or ACK, isn, (clientIsn + 1) and MASK, null, 0, 0, mss)
                     }
@@ -421,7 +377,7 @@ class PacketForwarder(
                     val behind = (rcvNext - dseq) and MASK
                     if (behind != 0L && behind < HALF) {
                         if (behind >= dlen) {
-                            dlen = 0 // pure duplicate
+                            dlen = 0
                             sendAck()
                         } else {
                             doff += behind.toInt()
@@ -436,7 +392,7 @@ class PacketForwarder(
                             }
                             sendAck()
                         } else {
-                            sendAck() // out of order: duplicate ACK, client retransmits
+                            sendAck()
                             return
                         }
                     }
@@ -475,8 +431,6 @@ class PacketForwarder(
             lock.withLock { closeInternal(false) }
         }
 
-        // ---- helpers (call with lock held) ---------------------------------
-
         private fun inflight(): Long = (sndNxt - sndUna) and MASK
 
         private fun sendAck() {
@@ -512,10 +466,6 @@ class PacketForwarder(
             cond.signalAll()
         }
     }
-
-    // ------------------------------------------------------------------
-    // UDP
-    // ------------------------------------------------------------------
 
     private fun forwardUdp(
         p: ByteArray, len: Int, ihl: Int, srcIp: Int, dstIp: Int, gate: FlowGate
@@ -637,16 +587,10 @@ class PacketForwarder(
             } catch (_: ClosedSelectorException) {
                 return
             } catch (_: IOException) {
-                // keep going
             } catch (_: RuntimeException) {
-                // e.g. cancelled key; keep going
             }
         }
     }
-
-    // ------------------------------------------------------------------
-    // Housekeeping
-    // ------------------------------------------------------------------
 
     private fun cleanup(aggressive: Boolean = false) {
         val now = System.currentTimeMillis()
@@ -675,14 +619,9 @@ class PacketForwarder(
         try {
             tun.write(packet, packet.size)
         } catch (_: Exception) {
-            // TUN closed while shutting down.
         }
         listener?.onInbound(flow, uid, packet.size, tcpFlags)
     }
-
-    // ------------------------------------------------------------------
-    // Packet construction
-    // ------------------------------------------------------------------
 
     private fun buildTcp(
         srcIp: Int, dstIp: Int, srcPort: Int, dstPort: Int,
@@ -709,7 +648,6 @@ class PacketForwarder(
         return ipPacket(PROTO_TCP, srcIp, dstIp, nextId(), 0, more = false, df = true, payload = seg, poff = 0, plen = segLen)
     }
 
-    /** Builds a UDP datagram, fragmenting it when it does not fit the MTU. */
     private fun buildUdp(
         srcIp: Int, dstIp: Int, srcPort: Int, dstPort: Int,
         payload: ByteArray, poff: Int, plen: Int
@@ -836,7 +774,6 @@ class PacketForwarder(
                 ((dstIp ushr 16) and 0xFFFF).toLong() + (dstIp and 0xFFFF).toLong() +
                 proto.toLong() + length.toLong()
 
-        /** RFC 1071 one's-complement checksum, seeded with [seed]. */
         internal fun checksum(data: ByteArray, off: Int, len: Int, seed: Long): Int {
             var sum = seed
             var i = off
