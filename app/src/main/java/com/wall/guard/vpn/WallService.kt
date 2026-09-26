@@ -61,7 +61,6 @@ class WallService : VpnService() {
     @Volatile
     private var tunnel: Tunnel? = null
 
-    // Relays the traffic of apps that have port/IP rules (see PacketForwarder).
     @Volatile
     private var forwarder: PacketForwarder? = null
 
@@ -182,8 +181,6 @@ class WallService : VpnService() {
 
                 activateTunnel(newTunnel)
 
-                // /proc/net is only readable on Android 8/9; newer versions use
-                // ConnectivityManager#getConnectionOwnerUid instead.
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     socketTableJob = serviceScope.launch(Dispatchers.IO) {
                         KernelSocketTable.refresh()
@@ -229,12 +226,6 @@ class WallService : VpnService() {
         }
     }
 
-    /**
-     * Every app is routed through the tunnel so that all connections can be
-     * observed. Allowed traffic is relayed by [PacketForwarder]; blocked
-     * traffic is dropped. Our own package is excluded so the app can never
-     * loop into its own tunnel.
-     */
     private fun configureBuilder(): Builder {
         return Builder().apply {
             setSession("NTWall")
@@ -256,7 +247,6 @@ class WallService : VpnService() {
         return Tunnel(fd)
     }
 
-    /** Makes [newTunnel] the live tunnel and retires the previous one, if any. */
     private fun activateTunnel(newTunnel: Tunnel) {
         val oldTunnel = tunnel
         val oldJob = packetLoopJob
@@ -338,8 +328,6 @@ class WallService : VpnService() {
             Verdict.DENIED -> blocked = true
             Verdict.IGNORED -> record = false
             Verdict.UNSUPPORTED -> {
-                // IPv6, ICMP and other traffic cannot be relayed, so it is
-                // dropped. Only count it when a rule actually caused the drop.
                 uid = resolvePacketUid(packet) ?: Process.INVALID_UID
                 val result = ruleMatcher.evaluate(
                     uid = uid,
@@ -352,7 +340,6 @@ class WallService : VpnService() {
 
         if (!record) return
 
-        // Feed the connection tracker for the analysis dashboard.
         try {
             connectionTracker.record(
                 PacketObservation(
@@ -370,7 +357,7 @@ class WallService : VpnService() {
                     bytes = bytes
                 )
             )
-        } catch (_: Exception) { /* tracker should not crash packet loop */ }
+        } catch (_: Exception) {  }
 
         if (blocked) {
             trafficMonitor.recordDropped(uid, bytes)
@@ -379,11 +366,6 @@ class WallService : VpnService() {
         }
     }
 
-    /**
-     * Decides once per new flow. An unknown owner is treated as blocked
-     * (fail closed): the app's retransmitted SYN / next datagram is evaluated
-     * again a moment later, when the owner can be resolved.
-     */
     private fun decide(flow: FlowInfo): FlowDecision {
         val uid = resolveFlowUid(flow.protocol, flow.sourceIp, flow.sourcePort, flow.destIp, flow.destPort)
         if (uid == Process.INVALID_UID) return FlowDecision(false, uid)
@@ -395,7 +377,6 @@ class WallService : VpnService() {
         return FlowDecision(result.action == RuleMatcher.FirewallAction.ALLOW, uid)
     }
 
-    /** Reply traffic written back to an app by the relay. */
     private fun onInbound(flow: FlowInfo, uid: Int, bytes: Int, tcpFlags: Int) {
         trafficMonitor.recordForwarded(uid, bytes, false)
         val remote = flow.destIp.hostAddress ?: return
@@ -417,7 +398,7 @@ class WallService : VpnService() {
                     bytes = bytes
                 )
             )
-        } catch (_: Exception) { /* tracker should not crash the relay */ }
+        } catch (_: Exception) {  }
     }
 
     private fun resolvePacketUid(packet: ParsedPacket?): Int? {
@@ -446,10 +427,8 @@ class WallService : VpnService() {
 
         val key = ConnectionKey(protocol, srcIp, srcPort, dstIp, dstPort)
 
-        // 1) Fast path: UID cached for this connection 4-tuple.
         uidCache.get(key)?.let { return it }
 
-        // 2) Android 10+: the system tells the VPN app who owns the connection.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -463,13 +442,9 @@ class WallService : VpnService() {
                     return uid
                 }
             } catch (_: Exception) {
-                // fall through to the kernel table
             }
         }
 
-        // 3) Android 8/9 (and last resort): kernel socket table from /proc/net.
-        //    A brand-new connection may not be in the periodic snapshot yet, so
-        //    on a miss refresh it right away (rate limited).
         var tableUid = KernelSocketTable.resolveUid(
             proto = protocol,
             sourceIp = srcIp,
