@@ -62,8 +62,6 @@ class TrafficMonitor @Inject constructor() {
         _perApp.value = emptyMap()
     }
 
-    // Forwarded (allowed) traffic. Direction is computed by the caller from
-    // the packet's source vs destination addresses.
     @Synchronized
     fun recordForwarded(uid: Int, bytes: Int, outbound: Boolean) {
         if (bytes <= 0) return
@@ -80,7 +78,6 @@ class TrafficMonitor @Inject constructor() {
         _perApp.value = current + (uid to updated)
     }
 
-    // Dropped (blocked) traffic — connection attempts stopped by the firewall.
     @Synchronized
     fun recordDropped(uid: Int, bytes: Int) {
         if (bytes <= 0) return
