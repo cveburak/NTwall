@@ -5,17 +5,6 @@ import java.io.File
 import java.net.InetAddress
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * Resolves the UID that owns a packet by parsing the kernel's socket tables
- * (/proc/net/tcp*, /proc/net/udp*).
- *
- * This is only a fallback for Android 8/9 (API 26-28). Since Android 10 apps
- * can no longer read these files, so there the service asks
- * ConnectivityManager#getConnectionOwnerUid instead and this table stays empty.
- *
- * The table is rebuilt periodically from /proc so entries represent the
- * current live sockets. Lookup is a cheap hash-map hit on the packet path.
- */
 object KernelSocketTable {
 
     private data class SocketRow(
@@ -32,12 +21,10 @@ object KernelSocketTable {
 
     private const val REFRESH_INTERVAL_MS = 1_200L
 
-    /** Rebuild both lookup maps from the /proc net tables. Safe to call repeatedly. */
     fun refresh() {
         try {
             rebuild()
         } catch (_: Exception) {
-            // /proc may be transiently unreadable; keep the previous table.
         }
     }
 
@@ -138,12 +125,6 @@ object KernelSocketTable {
     private fun localPortKey(r: SocketRow): String =
         "${r.proto}|${r.localIp}|${r.localPort}"
 
-    /**
-     * Find the owning UID for a packet.
-     *
-     * @param sourceIp source address of the packet on the tunnel
-     * @param destIp destination address of the packet on the tunnel
-     */
     fun resolveUid(
         proto: Int,
         sourceIp: String?,
@@ -155,15 +136,12 @@ object KernelSocketTable {
             return Process.INVALID_UID
         }
 
-        // Outbound: on-device end is (sourceIp, sourcePort).
         fullMapRef.get()[fourTupleKey(proto, sourceIp, sourcePort, destIp, destPort)]
             ?.let { return it }
 
-        // Inbound/response: on-device end is (destIp, destPort).
         fullMapRef.get()[fourTupleKey(proto, destIp, destPort, sourceIp, sourcePort)]
             ?.let { return it }
 
-        // Fallback for unconnected sockets (e.g. DNS): on-device local port.
         localPortMapRef.get()[localPortKey(proto, sourceIp, sourcePort)]
             ?.let { return it }
 
