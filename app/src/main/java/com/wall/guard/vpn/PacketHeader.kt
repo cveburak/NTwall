@@ -11,7 +11,6 @@ data class IpHeader(
     val sourceIp: InetAddress,
     val destIp: InetAddress
 ) {
-    // header length in bytes (IPv4 IHL*4, IPv6 fixed 40)
     val headerLength: Int get() = ihl
 
     fun payloadLength(): Int = totalLength - headerLength
